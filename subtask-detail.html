@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI风控中台 - 子任务详情</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo { color: #58a6ff; font-size: 18px; font-weight: bold; }
+        .brand { font-size: 16px; font-weight: 600; }
+        .breadcrumb { color: #8b949e; font-size: 13px; }
+        .breadcrumb::before { content: "> "; margin: 0 4px; }
+        .header-right { display: flex; align-items: center; gap: 16px; color: #8b949e; }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        /* 面包屑导航 */
+        .nav-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #58a6ff;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .nav-back:hover { color: #79b8ff; }
+        
+        /* 页面标题 */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .page-subtitle {
+            color: #8b949e;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            border: 1px solid #30363d;
+            background: #21262d;
+            color: #e6edf3;
+            transition: all 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-primary {
+            background: #1f6feb;
+            border-color: #1f6feb;
+            color: #fff;
+        }
+        .btn-success {
+            background: #238636;
+            border-color: #238636;
+            color: #fff;
+        }
+        .btn-danger {
+            background: #da3633;
+            border-color: #da3633;
+            color: #fff;
+        }
+        
+        /* 信息卡片网格 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .info-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .info-card-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #21262d;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #8b949e; font-size: 12px; }
+        .info-value { color: #e6edf3; font-size: 13px; font-weight: 500; }
+        .info-value.mono {
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 12px;
+        }
+        .info-value.success { color: #3fb950; }
+        .info-value.danger { color: #f85149; }
+        .info-value.warning { color: #d29922; }
+        .info-value.info { color: #56d4dd; }
+        
+        /* 性能拆解 */
+        .performance-chart {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        .perf-bar-container {
+            flex: 1;
+            height: 32px;
+            background: #0d1117;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+        }
+        .perf-segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff;
+            position: relative;
+        }
+        .perf-segment.network {
+            background: #1f6feb;
+            width: 94.7%; /* 28500/30100 */
+        }
+        .perf-segment.agent {
+            background: #238636;
+            width: 5%; /* 1500/30100 */
+        }
+        .perf-segment.serialize {
+            background: #8b949e;
+            width: 0.3%; /* 100/30100 */
+        }
+        .perf-legend {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 12px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+        
+        /* 请求/响应区域 */
+        .code-block {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+            overflow-x: auto;
+        }
+        .code-block pre {
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #e6edf3;
+            margin: 0;
+        }
+        .code-block .key { color: #7ee787; }
+        .code-block .string { color: #a5d6ff; }
+        .code-block .number { color: #79c0ff; }
+        .code-block .boolean { color: #ff7b72; }
+        .code-block .null { color: #ff7b72; }
+        
+        /* Timeline */
+        .timeline-container {
+            position: relative;
+            padding-left: 24px;
+        }
+        .timeline-container::before {
+            content: "";
+            position: absolute;
+            left: 7px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #30363d;
+        }
+        .timeline-item {
+            position: relative;
+            padding: 12px 0;
+            border-bottom: 1px solid #21262d;
+        }
+        .timeline-item:last-child { border-bottom: none; }
+        .timeline-dot {
+            position: absolute;
+            left: -20px;
+            top: 16px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #30363d;
+            border: 2px solid #0d1117;
+        }
+        .timeline-dot.success { background: #238636; }
+        .timeline-dot.error { background: #da3633; }
+        .timeline-dot.info { background: #1f6feb; }
+        .timeline-time {
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 11px;
+            color: #8b949e;
+            margin-bottom: 4px;
+        }
+        .timeline-content {
+            font-size: 13px;
+            color: #e6edf3;
+        }
+        .timeline-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-right: 6px;
+            font-weight: 500;
+        }
+        .tag-system { background: rgba(31, 111, 235, 0.15); color: #58a6ff; }
+        .tag-network { background: rgba(158, 106, 3, 0.15); color: #d29922; }
+        .tag-error { background: rgba(218, 54, 51, 0.15); color: #f85149; }
+        
+        /* 关联信息 */
+        .relation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .relation-card {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .relation-value {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .relation-label {
+            font-size: 11px;
+            color: #8b949e;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <span class="logo">🏦</span>
+            <span class="brand">AI风控中台</span>
+            <span class="breadcrumb">子任务详情</span>
+        </div>
+        <div class="header-right">
+            <span>🔔</span>
+            <span>👤</span>
+            <span>退出</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- 返回导航 -->
+        <div class="nav-back" onclick="history.back()">
+            <span>←</span>
+            <span>返回父任务 T-20260430-8919</span>
+        </div>
+        
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <div>
+                <div class="page-title">子任务详情: sub-20260430-8919-2</div>
+                <div class="page-subtitle">信用风险预警Agent (v2.3.1) | 顺序: 2/3 | 调用模式: 同步</div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-success">重试此子任务</button>
+                <button class="btn btn-primary">查看Agent详情</button>
+                <button class="btn">查看同时间段其他任务</button>
+            </div>
+        </div>
+        
+        <!-- 基本信息 + 性能 -->
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-card-title">基本信息</div>
+                <div class="info-row">
+                    <span class="info-label">所属父任务</span>
+                    <span class="info-value mono">T-20260430-8919</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">业务单号</span>
+                    <span class="info-value mono">LOAN-202409820</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Agent</span>
+                    <span class="info-value">信用风险预警Agent v2.3.1</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">API端点</span>
+                    <span class="info-value mono" style="font-size: 11px;">POST /api/v2/agents/credit-risk/invoke</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">调用模式</span>
+                    <span class="info-value">同步调用</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">执行顺序</span>
+                    <span class="info-value">第2/3 (前序: 反欺诈Agent)</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">trace_id</span>
+                    <span class="info-value mono info">trace-20260430-8919-abc123</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">trace_span_id</span>
+                    <span class="info-value mono">span-8919-2</span>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-card-title">执行性能</div>
+                <div class="info-row">
+                    <span class="info-label">业务系统计时</span>
+                    <span class="info-value danger">30,100ms</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">网络耗时 (瓶颈)</span>
+                    <span class="info-value warning">28,500ms (94.7%)</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Agent处理</span>
+                    <span class="info-value">1,500ms (5.0%)</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">序列化</span>
+                    <span class="info-value">100ms (0.3%)</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">重试次数</span>
+                    <span class="info-value danger">3/3 (每次10s超时)</span>
+                </div>
+                
+                <div class="performance-chart">
+                    <div class="perf-bar-container">
+                        <div class="perf-segment network">网络 94.7%</div>
+                        <div class="perf-segment agent">Agent 5%</div>
+                        <div class="perf-segment serialize">序列 0.3%</div>
+                    </div>
+                </div>
+                <div class="perf-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #1f6feb;"></div>
+                        <span>网络耗时</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #238636;"></div>
+                        <span>Agent处理</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #8b949e;"></div>
+                        <span>序列化</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 请求参数 -->
+        <div class="info-card" style="margin-bottom: 16px;">
+            <div class="info-card-title">请求参数 (Request)</div>
+            <div class="code-block">
+                <pre>{
+  <span class="key">"customer_id"</span>: <span class="string">"C-2024009820"</span>,
+  <span class="key">"threshold"</span>: <span class="number">0.7</span>,           <span class="null">← 场景覆盖参数</span>
+  <span class="key">"report_type"</span>: <span class="string">"detailed"</span>,
+  <span class="key">"trace_id"</span>: <span class="string">"trace-20260430-8919-abc123"</span>  <span class="null">← 透传trace_id</span>
+}</pre>
+            </div>
+        </div>
+        
+        <!-- 响应结果 -->
+        <div class="info-card" style="margin-bottom: 16px;">
+            <div class="info-card-title">响应结果 (Response)</div>
+            <div style="padding: 12px; background: rgba(218, 54, 51, 0.1); border-radius: 6px; border-left: 3px solid #da3633; margin-bottom: 12px;">
+                <div style="color: #f85149; font-size: 13px; font-weight: 600; margin-bottom: 8px;">ERROR: 504 Gateway Timeout</div>
+                <div style="color: #8b949e; font-size: 12px;">上游: Agent平台 /api/v2/agents/credit-risk/invoke</div>
+                <div style="color: #8b949e; font-size: 12px;">时间: 2026-04-30 18:46:02 (第3次重试)</div>
+            </div>
+            <div style="background: #161b22; border-radius: 6px; padding: 12px;">
+                <div style="font-size: 12px; color: #8b949e; margin-bottom: 8px;">建议排查:</div>
+                <div style="font-size: 13px; color: #e6edf3; line-height: 1.8;">
+                    1. Agent平台该Agent实例健康度: <span style="color: #d29922;">85% (2/3实例正常)</span><br>
+                    2. 同时间段其他任务调用该Agent: <span style="color: #e6edf3;">23次，其中5次超时</span><br>
+                    3. Agent平台状态页: <a href="#" style="color: #58a6ff;">点击查看 →</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 执行日志 Timeline -->
+        <div class="info-card" style="margin-bottom: 16px;">
+            <div class="info-card-title">执行日志 (Timeline)</div>
+            <div class="timeline-container">
+                <div class="timeline-item">
+                    <div class="timeline-dot info"></div>
+                    <div class="timeline-time">18:45:32.000</div>
+                    <div class="timeline-content">
+                        <span class="timeline-tag tag-system">业务系统</span>
+                        开始执行子任务2 (信用风险预警Agent)
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot info"></div>
+                    <div class="timeline-time">18:45:32.050</div>
+                    <div class="timeline-content">
+                        <span class="timeline-tag tag-system">业务系统</span>
+                        参数校验通过，构造请求体
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot info"></div>
+                    <div class="timeline-time">18:45:32.100</div>
+                    <div class="timeline-content">
+                        <span class="timeline-tag tag-network">网络</span>
+                        发送HTTP POST请求到Agent平台
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot error"></div>
+                    <div class="timeline-time">18:45:42.100</div>
+                    <div class="timeline-content">
+                        <span class="timeline-tag tag-network">网络</span>
+                        第1次调用: <span style="color: #f85149;">超时(10s)</span>，触发重试策略
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot info"></div>
+                    <div class="timeline-time">18:45:42.150</div>
+                    <div class="timeline-content">
+                        <span class="timeline-tag tag-system">业务系统</span>
+                        等待2s后重试 (指数退避)
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot error"></div>
+                    <div class="timeline-time">18:45:44.150</div>
+                    <div class="timeline-content">
+                        <span class="timeline-tag tag-network">网络</span>
+                        第2次调用: <span style="color: #f85149;">超时(10s)</span>，触发重试
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot error"></div>
+                    <div class="timeline-time">18:45:46.150</div>
+                    <div class="timeline-content">
+                        <span class="timeline-tag tag-network">网络</span>
+                        第3次调用: <span style="color: #f85149;">超时(10s)</span>，重试耗尽
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot error"></div>
+                    <div class="timeline-time">18:46:02.100</div>
+                    <div class="timeline-content">
+                        <span class="timeline-tag tag-system">业务系统</span>
+                        标记子任务失败，触发父任务失败策略: <span style="color: #f85149;">中断</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot info"></div>
+                    <div class="timeline-time">18:46:02.150</div>
+                    <div class="timeline-content">
+                        <span class="timeline-tag tag-system">业务系统</span>
+                        记录错误日志，通知告警系统
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 关联信息 -->
+        <div class="info-card">
+            <div class="info-card-title">关联信息</div>
+            <div class="relation-grid">
+                <div class="relation-card">
+                    <div class="relation-value" style="color: #d29922;">85%</div>
+                    <div class="relation-label">Agent平台健康度</div>
+                </div>
+                <div class="relation-card">
+                    <div class="relation-value" style="color: #f85149;">5/23</div>
+                    <div class="relation-label">同时间段超时率</div>
+                </div>
+                <div class="relation-card">
+                    <div class="relation-value" style="color: #58a6ff;">2/3</div>
+                    <div class="relation-label">存活实例数</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

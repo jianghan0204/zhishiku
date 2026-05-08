@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI风控中台 - 任务组管理</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo {
+            color: #58a6ff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .brand {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .breadcrumb {
+            color: #8b949e;
+            font-size: 13px;
+        }
+        .breadcrumb::before {
+            content: "> ";
+            margin: 0 4px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: #8b949e;
+        }
+        .header-icon {
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .header-icon:hover {
+            background: #21262d;
+        }
+        .page-title-bar {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid #30363d;
+        }
+        .page-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .view-switch {
+            display: flex;
+            gap: 4px;
+            background: #21262d;
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+        .view-btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #8b949e;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+        }
+        .view-btn.active {
+            background: #1f6feb;
+            color: #fff;
+        }
+        .view-btn:hover:not(.active) {
+            color: #e6edf3;
+        }
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            border: 1px solid #30363d;
+            background: #21262d;
+            color: #e6edf3;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #1f6feb;
+            border-color: #1f6feb;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #388bfd;
+        }
+        .btn-success {
+            background: #238636;
+            border-color: #238636;
+            color: #fff;
+        }
+        .btn-danger {
+            background: #da3633;
+            border-color: #da3633;
+            color: #fff;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 24px;
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            flex-wrap: wrap;
+        }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .filter-label {
+            color: #8b949e;
+            font-size: 12px;
+        }
+        .filter-select {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #e6edf3;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .filter-count {
+            margin-left: auto;
+            color: #8b949e;
+        }
+        .main-content {
+            padding: 16px 24px;
+        }
+        .task-group-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .task-group-header {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .task-group-header:hover {
+            background: rgba(48, 54, 61, 0.3);
+        }
+        .task-group-header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+        }
+        .task-id {
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 12px;
+            color: #58a6ff;
+            background: rgba(88, 166, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        .task-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .task-scene {
+            color: #8b949e;
+            font-size: 12px;
+        }
+        .task-progress-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 2;
+        }
+        .progress-bar-container {
+            width: 200px;
+            height: 20px;
+            background: #0d1117;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+        }
+        .progress-segment {
+            height: 100%;
+            transition: width 0.3s;
+        }
+        .progress-success { background: #238636; }
+        .progress-fail { background: #da3633; }
+        .progress-retry { background: #9e6a03; }
+        .progress-pending { background: #30363d; }
+        .progress-text {
+            font-size: 12px;
+            color: #8b949e;
+            white-space: nowrap;
+        }
+        .task-status-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            justify-content: flex-end;
+        }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-running {
+            background: rgba(31, 111, 235, 0.15);
+            color: #58a6ff;
+        }
+        .status-success {
+            background: rgba(35, 134, 54, 0.15);
+            color: #3fb950;
+        }
+        .status-failed {
+            background: rgba(218, 54, 51, 0.15);
+            color: #f85149;
+        }
+        .eta-text {
+            color: #8b949e;
+            font-size: 12px;
+        }
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 16px;
+        }
+        .action-btn {
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+        .task-group-detail {
+            border-top: 1px solid #30363d;
+            padding: 20px;
+            display: none;
+        }
+        .task-group-detail.expanded {
+            display: block;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+        .detail-section {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .detail-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8b949e;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .timeline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .timeline-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #30363d;
+        }
+        .timeline-dot.active {
+            background: #1f6feb;
+            box-shadow: 0 0 8px rgba(31, 111, 235, 0.5);
+        }
+        .timeline-line {
+            flex: 1;
+            height: 2px;
+            background: #30363d;
+            position: relative;
+        }
+        .timeline-line-fill {
+            height: 100%;
+            background: #1f6feb;
+            transition: width 0.3s;
+        }
+        .timeline-label {
+            font-size: 11px;
+            color: #8b949e;
+            margin-top: 4px;
+        }
+        .rate-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 60px;
+            padding: 8px 0;
+        }
+        .rate-bar {
+            flex: 1;
+            background: #1f6feb;
+            border-radius: 2px 2px 0 0;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            position: relative;
+        }
+        .rate-bar:hover {
+            opacity: 1;
+        }
+        .rate-bar.warning {
+            background: #9e6a03;
+        }
+        .rate-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #21262d;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            border: 1px solid #30363d;
+        }
+        .rate-bar:hover .rate-tooltip {
+            opacity: 1;
+        }
+        .fail-distribution {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .fail-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .fail-label {
+            width: 140px;
+            font-size: 12px;
+            color: #e6edf3;
+        }
+        .fail-bar-bg {
+            flex: 1;
+            height: 8px;
+            background: #21262d;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .fail-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        .fail-count {
+            width: 60px;
+            text-align: right;
+            font-size: 12px;
+            color: #8b949e;
+        }
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 12px;
+        }
+        .resource-item {
+            text-align: center;
+            padding: 12px;
+            background: #161b22;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+        .resource-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e6edf3;
+            margin-bottom: 4px;
+        }
+        .resource-label {
+            font-size: 11px;
+            color: #8b949e;
+        }
+        .detail-footer {
+            display: flex;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid #30363d;
+            margin-top: 16px;
+        }
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 20px;
+            color: #8b949e;
+        }
+        .page-btn {
+            padding: 6px 12px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #e6edf3;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .page-btn:hover {
+            background: #30363d;
+        }
+        .expand-icon {
+            transition: transform 0.2s;
+            margin-right: 8px;
+            color: #8b949e;
+        }
+        .expanded .expand-icon {
+            transform: rotate(90deg);
+        }
+        .alert-box {
+            margin-top: 12px;
+            padding: 8px;
+            background: rgba(158, 106, 3, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid #9e6a03;
+        }
+        .alert-text {
+            color: #d29922;
+            font-size: 12px;
+        }
+        .fail-reason-box {
+            padding: 12px;
+            background: rgba(218, 54, 51, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid #da3633;
+            margin-bottom: 16px;
+        }
+        .fail-reason-text {
+            color: #f85149;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <span class="logo">[BANK]</span>
+            <span class="brand">AI风控中台</span>
+            <span class="breadcrumb">任务组管理</span>
+        </div>
+        <div class="header-right">
+            <span class="header-icon">[BELL]</span>
+            <span class="header-icon">[USER]</span>
+            <span>退出</span>
+        </div>
+    </div>
+    
+    <div class="page-title-bar">
+        <div class="page-title">任务组管理</div>
+        <div class="toolbar">
+            <div class="view-switch">
+                <button class="view-btn" onclick="switchView(this, 'parent')">父任务</button>
+                <button class="view-btn" onclick="switchView(this, 'sub')">子任务</button>
+                <button class="view-btn active" onclick="switchView(this, 'group')">任务组</button>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary">+ 新建批量任务</button>
+                <button class="btn">[Q] 搜索</button>
+                <button class="btn">[R] 刷新</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="filter-bar">
+        <div class="filter-item">
+            <span class="filter-label">状态:</span>
+            <select class="filter-select">
+                <option>执行中</option>
+                <option>全部</option>
+                <option>已完成</option>
+                <option>失败</option>
+            </select>
+        </div>
+        <div class="filter-item">
+            <span class="filter-label">类型:</span>
+            <select class="filter-select">
+                <option>夜间批量</option>
+                <option>全部</option>
+                <option>日间批量</option>
+                <option>实时聚合</option>
+            </select>
+        </div>
+        <div class="filter-item">
+            <span class="filter-label">发起时间:</span>
+            <select class="filter-select">
+                <option>近7天</option>
+                <option>近24小时</option>
+                <option>近30天</option>
+            </select>
+        </div>
+        <span class="filter-count">共 3 个任务组</span>
+    </div>
+    
+    <div class="main-content">
+        <div class="task-group-card">
+            <div class="task-group-header" onclick="toggleDetail(this)">
+                <div class="task-group-header-left">
+                    <span class="expand-icon">▶</span>
+                    <span class="task-id">G-20260430-NIGHT</span>
+                    <span class="task-name">夜间贷后监控</span>
+                    <span class="task-scene">场景: 贷后风险监控</span>
+                </div>
+                <div class="task-progress-section">
+                    <div class="progress-bar-container">
+                        <div class="progress-segment progress-success" style="width: 80%"></div>
+                        <div class="progress-segment progress-fail" style="width: 1.2%"></div>
+                        <div class="progress-segment progress-retry" style="width: 0.8%"></div>
+                        <div class="progress-segment progress-pending" style="width: 18%"></div>
+                    </div>
+                    <span class="progress-text">8,000/120/80/1,800 (10,000)</span>
+                </div>
+                <div class="task-status-section">
+                    <span class="status-badge status-running">执行中 82%</span>
+                    <span class="eta-text">预计 01:30 完成</span>
+                    <div class="task-actions">
+                        <button class="btn btn-danger action-btn">暂停</button>
+                        <button class="btn action-btn">详情</button>
+                    </div>
+                </div>
+            </div>
+            <div class="task-group-detail">
+                <div class="detail-grid">
+                    <div class="detail-section">
+                        <div class="detail-section-title">执行时间轴</div>
+                        <div class="timeline">
+                            <div>
+                                <div class="timeline-dot active"></div>
+                                <div class="timeline-label">22:00 启动</div>
+                            </div>
+                            <div class="timeline-line">
+                                <div class="timeline-line-fill" style="width: 30%"></div>
+                            </div>
+                            <div>
+                                <div class="timeline-dot active"></div>
+                                <div class="timeline-label">22:05 峰值200并发</div>
+                            </div>
+                            <div class="timeline-line">
+                                <div class="timeline-line-fill" style="width: 50%"></div>
+                            </div>
+                            <div>
+                                <div class="timeline-dot" style="background: #9e6a03"></div>
+                                <div class="timeline-label" style="color: #d29922">23:30 降速50%</div>
+                            </div>
+                            <div class="timeline-line">
+                                <div class="timeline-line-fill" style="width: 0%"></div>
+                            </div>
+                            <div>
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-label">01:30 预计完成</div>
+                            </div>
+                        </div>
+                        <div class="alert-box">
+                            <span class="alert-text">告警：23:30 Agent平台健康度降至80%，自动降速至100并发</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <div class="detail-section-title">每分钟处理速率 (最近30分钟)</div>
+                        <div class="rate-chart">
+                            <div class="rate-bar" style="height: 40%">
+                                <div class="rate-tooltip">22:00 45笔/分</div>
+                            </div>
+                            <div class="rate-bar" style="height: 60%">
+                                <div class="rate-tooltip">22:05 68笔/分</div>
+                            </div>
+                            <div class="rate-bar" style="height: 80%">
+                                <div class="rate-tooltip">22:10 90笔/分</div>
+                            </div>
+                            <div class="rate-bar" style="height: 95%">
+                                <div class="rate-tooltip">22:15 105笔/分</div>
+                            </div>
+                            <div class="rate-bar" style="height: 100%">
+                                <div class="rate-tooltip">22:20 110笔/分</div>
+                            </div>
+                            <div class="rate-bar warning" style="height: 50%">
+                                <div class="rate-tooltip">23:30 55笔/分</div>
+                            </div>
+                            <div class="rate-bar warning" style="height: 45%">
+                                <div class="rate-tooltip">23:35 50笔/分</div>
+                            </div>
+                            <div class="rate-bar" style="height: 55%">
+                                <div class="rate-tooltip">23:40 60笔/分</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: #8b949e;">
+                            <span>峰值: 110笔/分 (22:20)</span>
+                            <span>当前: 60笔/分</span>
+                            <span>平均: 78笔/分</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section" style="margin-bottom: 20px;">
+                    <div class="detail-section-title">失败分布</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div>
+                            <div style="font-size: 12px; color: #8b949e; margin-bottom: 8px;">按Agent</div>
+                            <div class="fail-distribution">
+                                <div class="fail-item">
+                                    <span class="fail-label">信用评估Agent</span>
+                                    <div class="fail-bar-bg">
+                                        <div class="fail-bar-fill" style="width: 66%; background: #da3633;"></div>
+                                    </div>
+                                    <span class="fail-count">80次 (1%)</span>
+                                </div>
+                                <div class="fail-item">
+                                    <span class="fail-label">反欺诈Agent</span>
+                                    <div class="fail-bar-bg">
+                                        <div class="fail-bar-fill" style="width: 25%; background: #d29922;"></div>
+                                    </div>
+                                    <span class="fail-count">30次 (0.3%)</span>
+                                </div>
+                                <div class="fail-item">
+                                    <span class="fail-label">合规审查Agent</span>
+                                    <div class="fail-bar-bg">
+                                        <div class="fail-bar-fill" style="width: 8%; background: #8b949e;"></div>
+                                    </div>
+                                    <span class="fail-count">10次 (0.1%)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #8b949e; margin-bottom: 8px;">按错误类型</div>
+                            <div class="fail-distribution">
+                                <div class="fail-item">
+                                    <span class="fail-label">超时</span>
+                                    <div class="fail-bar-bg">
+                                        <div class="fail-bar-fill" style="width: 60%; background: #da3633;"></div>
+                                    </div>
+                                    <span class="fail-count">120次</span>
+                                </div>
+                                <div class="fail-item">
+                                    <span class="fail-label">参数异常</span>
+                                    <div class="fail-bar-bg">
+                                        <div class="fail-bar-fill" style="width: 40%; background: #d29922;"></div>
+                                    </div>
+                                    <span class="fail-count">80次</span>
+                                </div>
+                                <div class="fail-item">
+                                    <span class="fail-label">Agent平台500</span>
+                                    <div class="fail-bar-bg">
+                                        <div class="fail-bar-fill" style="width: 0%; background: #8b949e;"></div>
+                                    </div>
+                                    <span class="fail-count">0次</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-section-title">资源消耗</div>
+                    <div class="resource-grid">
+                        <div class="resource-item">
+                            <div class="resource-value">10,000</div>
+                            <div class="resource-label">Agent平台调用总量</div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-value">5,200s</div>
+                            <div class="resource-label">总耗时</div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-value">520ms</div>
+                            <div class="resource-label">平均RT</div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-value" style="color: #3fb950;">2,400</div>
+                            <div class="resource-label">预估成本</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-footer">
+                    <button class="btn btn-primary">查看全部父任务列表</button>
+                    <button class="btn">下载失败明细</button>
+                    <button class="btn">生成审计报告</button>
+                    <button class="btn btn-success">按失败原因批量重试</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="task-group-card">
+            <div class="task-group-header" onclick="toggleDetail(this)">
+                <div class="task-group-header-left">
+                    <span class="expand-icon">▶</span>
+                    <span class="task-id">G-20260429-NIGHT</span>
+                    <span class="task-name">夜间贷后监控</span>
+                    <span class="task-scene">场景: 贷后风险监控</span>
+                </div>
+                <div class="task-progress-section">
+                    <div class="progress-bar-container">
+                        <div class="progress-segment progress-success" style="width: 99.5%"></div>
+                        <div class="progress-segment progress-fail" style="width: 0.5%"></div>
+                    </div>
+                    <span class="progress-text">9,950/50/0/0 (10,000)</span>
+                </div>
+                <div class="task-status-section">
+                    <span class="status-badge status-success">完成 00:45</span>
+                    <div class="task-actions">
+                        <button class="btn action-btn">详情</button>
+                        <button class="btn action-btn">报告</button>
+                    </div>
+                </div>
+            </div>
+            <div class="task-group-detail">
+                <div class="detail-footer">
+                    <button class="btn btn-primary">查看全部父任务列表</button>
+                    <button class="btn">下载失败明细</button>
+                    <button class="btn">生成审计报告</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="task-group-card">
+            <div class="task-group-header" onclick="toggleDetail(this)">
+                <div class="task-group-header-left">
+                    <span class="expand-icon">▶</span>
+                    <span class="task-id">G-20260428-NIGHT</span>
+                    <span class="task-name">夜间贷后监控</span>
+                    <span class="task-scene">场景: 贷后风险监控</span>
+                </div>
+                <div class="task-progress-section">
+                    <div class="progress-bar-container">
+                        <div class="progress-segment progress-success" style="width: 60%"></div>
+                        <div class="progress-segment progress-fail" style="width: 20%"></div>
+                        <div class="progress-segment progress-retry" style="width: 20%"></div>
+                    </div>
+                    <span class="progress-text">6,000/2,000/2,000/0 (10,000)</span>
+                </div>
+                <div class="task-status-section">
+                    <span class="status-badge status-failed">失败 03:00</span>
+                    <div class="task-actions">
+                        <button class="btn btn-danger action-btn">重跑</button>
+                        <button class="btn action-btn">详情</button>
+                    </div>
+                </div>
+            </div>
+            <div class="task-group-detail">
+                <div class="fail-reason-box">
+                    <span class="fail-reason-text">失败原因：02:30 Agent平台完全不可用，剩余4,000笔任务无法执行</span>
+                </div>
+                <div class="detail-footer">
+                    <button class="btn btn-success">断点续跑（从6,001笔开始）</button>
+                    <button class="btn">下载失败明细</button>
+                    <button class="btn">生成审计报告</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="pagination">
+        <button class="page-btn">上一页</button>
+        <span>第 1/1 页</span>
+        <button class="page-btn">下一页</button>
+    </div>
+    
+    <script>
+        function toggleDetail(header) {
+            const card = header.parentElement;
+            const detail = card.querySelector('.task-group-detail');
+            const icon = header.querySelector('.expand-icon');
+            
+            if (detail.classList.contains('expanded')) {
+                detail.classList.remove('expanded');
+                icon.textContent = '▶';
+            } else {
+                document.querySelectorAll('.task-group-detail.expanded').forEach(function(d) {
+                    d.classList.remove('expanded');
+                    d.parentElement.querySelector('.expand-icon').textContent = '▶';
+                });
+                detail.classList.add('expanded');
+                icon.textContent = '▼';
+            }
+        }
+        
+        function switchView(btn, view) {
+            document.querySelectorAll('.view-btn').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>AI风控中台 - Agent管理模块原型</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+        }
+        h1 {
+            color: #58a6ff;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #8b949e;
+            margin-bottom: 40px;
+        }
+        .nav-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .nav-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: #e6edf3;
+        }
+        .nav-card:hover {
+            border-color: #58a6ff;
+            transform: translateY(-2px);
+        }
+        .nav-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        .nav-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .nav-desc {
+            font-size: 13px;
+            color: #8b949e;
+        }
+        .status-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-top: 12px;
+        }
+        .status-done {
+            background: rgba(35, 134, 54, 0.15);
+            color: #3fb950;
+        }
+        .status-new {
+            background: rgba(31, 111, 235, 0.15);
+            color: #58a6ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏦 AI风控中台</h1>
+        <div class="subtitle">Agent管理模块 - 高保真静态原型</div>
+        
+        <div class="nav-grid">
+            <a href="agent-management.html" class="nav-card">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-title">Agent管理</div>
+                <div class="nav-desc">Agent注册、健康度监控、版本管理</div>
+                <span class="status-tag status-done">已完成</span>
+            </a>
+            
+            <a href="scene-management.html" class="nav-card">
+                <div class="nav-icon">📋</div>
+                <div class="nav-title">业务场景管理</div>
+                <div class="nav-desc">场景定义、Agent绑定、参数配置</div>
+                <span class="status-tag status-done">已完成</span>
+            </a>
+            
+            <a href="agent-scene-relation.html" class="nav-card">
+                <div class="nav-icon">🔗</div>
+                <div class="nav-title">Agent-场景关系</div>
+                <div class="nav-desc">矩阵视图、路由策略、参数覆盖</div>
+                <span class="status-tag status-done">已完成</span>
+            </a>
+            
+            <a href="task-management.html" class="nav-card">
+                <div class="nav-icon">📊</div>
+                <div class="nav-title">调用任务管理</div>
+                <div class="nav-desc">父/子任务、任务组、执行监控</div>
+                <span class="status-tag status-done">已完成</span>
+            </a>
+            
+            <a href="task-group.html" class="nav-card">
+                <div class="nav-icon">🗂️</div>
+                <div class="nav-title">任务组视图</div>
+                <div class="nav-desc">批量任务进度、速率图表、失败分布</div>
+                <span class="status-tag status-new">新增</span>
+            </a>
+            
+            <a href="subtask-detail.html" class="nav-card">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-title">子任务详情</div>
+                <div class="nav-desc">性能拆解、Timeline日志、关联分析</div>
+                <span class="status-tag status-new">新增</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
